@@ -1,4 +1,5 @@
 import os
+import torch
 from langchain_community.document_loaders import Docx2txtLoader
 from langchain_community.vectorstores import Chroma
 from langchain_experimental.text_splitter import SemanticChunker
@@ -7,8 +8,14 @@ from langchain_community.cross_encoders import HuggingFaceCrossEncoder
 from langchain.retrievers.document_compressors import CrossEncoderReranker
 from langchain.retrievers import ContextualCompressionRetriever
 
-# Initialize embeddings
-embeddings = HuggingFaceEmbeddings(model_name="Omartificial-Intelligence-Space/GATE-AraBert-v1", cache_folder="models", show_progress=True)
+# Check if GPU is available
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"Using device: {device}")
+
+# Initialize embeddings with GPU support
+embeddings = HuggingFaceEmbeddings(
+    model_name="Omartificial-Intelligence-Space/GATE-AraBert-v1"
+)
 
 def load_docx(file_path):
     """Load a single .docx file."""
