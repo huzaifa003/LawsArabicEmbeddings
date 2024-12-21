@@ -2,3 +2,7 @@ Folders
 __pycache__
 venv
 models
+Chunks
+VectorDB
+Chunks.zip
+VectorDB.zip

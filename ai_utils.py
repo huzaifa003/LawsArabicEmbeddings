@@ -94,6 +94,8 @@ def store_chunks_in_vector_db(chunks, persist_dir="vector_db"):
         print(f"Error storing chunks in vector DB: {e}")
         return None, None
 
+
+
 def process_docs(input_folder, chunks_folder, vector_db_dir):
     """Main function to process .docx files, chunk them, save chunks, and store in vector DB."""
     # Step 1: Load all documents from the input folder
@@ -125,3 +127,40 @@ def process_docs(input_folder, chunks_folder, vector_db_dir):
     else:
         print("Processing encountered issues during vector DB storage.")
 
+
+# def get_vector_db(persist_dir="vector_db"):
+#     """Retrieve the vector database from the specified directory."""
+#     print(f"Retrieving vector database from {persist_dir}")
+#     return Chroma.from_documents([], embeddings, persist_directory=persist_dir)
+
+def load_chunks_from_folder(folder_path):
+    """Load all chunk files from a folder."""
+    chunk_files = []
+    for root, dirs, files in os.walk(folder_path):
+        for file in files:
+            if file.lower().endswith(".txt"):
+                full_path = os.path.join(root, file)
+                chunk_files.append(full_path)
+                print(f"Found chunk file: {full_path}")
+    return chunk_files
+
+def get_compression_retriever(persist_dir="vector_db", chunks_folder="chunks"):
+    try: 
+        """Retrieve the compression retriever from the specified directory."""
+        # chunks = load_chunks_from_folder(chunks_folder)
+        # print(f"Loaded {len(chunks)} chunks from {chunks_folder}")
+        # print(chunks)
+        # print(f"Retrieving compression retriever from {persist_dir}")
+        vector_db: Chroma = Chroma(persist_directory=persist_dir, embedding_function=embeddings)
+        
+        vectorstore_retriever = vector_db.as_retriever(search_kwargs={"k": 3})
+        print(vectorstore_retriever)
+        model = HuggingFaceCrossEncoder(model_name="Omartificial-Intelligence-Space/ARA-Reranker-V1", )
+        compressor = CrossEncoderReranker(model=model, top_n=3)
+        compression_retriever = ContextualCompressionRetriever(
+            base_compressor=compressor, base_retriever=vectorstore_retriever
+        )
+        return compression_retriever
+    except Exception as e:
+        print(f"Error retrieving compression retriever: {e}")
+        return None
